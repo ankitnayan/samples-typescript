@@ -34,11 +34,13 @@
     "@opentelemetry/instrumentation-dns": "^0.44.0",
     "@opentelemetry/instrumentation-fs": "^0.20.0",
     "@opentelemetry/instrumentation-http": "^0.200.0",
+    "@opentelemetry/instrumentation-winston": "^0.45.0",
     "@opentelemetry/resources": "^1.30.0",
     "@opentelemetry/sdk-metrics": "^1.30.0",
     "@opentelemetry/sdk-node": "^0.57.0",
     "@opentelemetry/sdk-trace-node": "^1.30.0",
     "@opentelemetry/semantic-conventions": "^1.28.0",
+    "@opentelemetry/winston-transport": "^0.11.0",
     "@temporalio/activity": "^1.11.6",
     "@temporalio/client": "^1.11.6",
     "@temporalio/interceptors-opentelemetry": "^1.11.7",
@@ -50,7 +52,8 @@
     "dotenv": "^16.4.7",
     "fs": "0.0.1-security",
     "fs-extra": "^11.3.0",
-    "nanoid": "3.x"
+    "nanoid": "3.x",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@temporalio/testing": "^1.11.6",

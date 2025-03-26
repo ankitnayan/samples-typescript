@@ -9,9 +9,12 @@ import {
 } from '@temporalio/interceptors-opentelemetry/lib/worker';
 import { otelSdk, resource, traceExporter } from './instrumentation';
 import { MetricReader } from '@opentelemetry/sdk-metrics';
+import { logger } from './logger';
+
 
 
 function initializeRuntime() {
+  
   Runtime.install({
     // Configure a logger that will collect all log messages emitted by the Worker,
     // including those emitted through the Workflow's and Activity's context logger APIs.
@@ -21,7 +24,7 @@ function initializeRuntime() {
     // IMPORTANT: Make sure to configure the `telemetryOptions.logging` property
     //            below to also collect logs emitted by the native runtime.
     //
-    logger: new DefaultLogger('WARN'),
+    logger,
 
     telemetryOptions: {
       // Configure the OpenTelemetry metrics exporter for the native runtime.

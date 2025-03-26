@@ -31,10 +31,10 @@ function setupTraceExporter(): SpanExporter | undefined {
 
   // (2) A span exporter that sends spans to a server using the _OTLP over gRPC_ protocol.
   //     This is the most common configuration when connecting to a trace collector.
-  //
+  
   // return new OTLPTraceExporterGrpc({
   //   url: 'http://127.0.0.1:4317',
-  //
+  
   //   // Default is 10s, which reduces performance overhead in production,
   //   // but a shorter value is convenient in dev and test use cases.
   //   timeoutMillis: 1000,
@@ -134,4 +134,3 @@ export const otelSdk = new NodeSDK({
   instrumentations: [getNodeAutoInstrumentations()],
 });
 
-otelSdk.start();

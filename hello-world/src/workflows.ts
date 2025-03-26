@@ -11,6 +11,10 @@ import {
 // Only import the activity types
 import type * as activities from './activities';
 
+import { log } from '@temporalio/workflow';
+
+
+
 const { greet } = proxyActivities<typeof activities>({
   startToCloseTimeout: '1 minute',
 });
@@ -22,6 +26,7 @@ export async function delay(ms: number) {
 export async function example(name: string): Promise<string> {
 
   await delay(5000);
+  log.info('Before greet!');
   return await greet(name);
 }
 

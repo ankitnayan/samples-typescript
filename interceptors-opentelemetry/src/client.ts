@@ -18,7 +18,7 @@ async function run() {
   });
 
   const result = await client.workflow.execute(example, {
-    taskQueue: 'interceptors-opentelemetry-example',
+    taskQueue: 'test-queue',
     workflowId: randomUUID(),
     args: ['Temporal'],
   });

@@ -7,8 +7,9 @@ import {
 import * as activities from './activities';
 import { otelSdk, resource, traceExporter } from './instrumentation';
 
-function initializeRuntime() {
-  Runtime.install({
+async function initializeRuntime() {
+  
+  await Runtime.install({
     // Configure a logger that will collect all log messages emitted by the Worker,
     // including those emitted through the Workflow's and Activity's context logger APIs.
     // See the 'custom-logger' sample for an example of how to build a logger that
@@ -31,9 +32,15 @@ function initializeRuntime() {
       //     to a metrics collector. Note that the _OTLP over HTTP_ protocol (i.e. port 4318)
       //     is not supported for Runtime's metrics.
       //
-      // metrics: {
-      //   otel: { url: 'http://127.0.0.1:4317', metricsExportInterval: '1s' },
-      // },
+      metrics: {
+        // globalTags: {
+        //   'service.name': 'interceptors-sample',
+        // },
+        prometheus: {
+          bindAddress: '0.0.0.0:9091',
+          // otel: { url: 'http://127.0.0.1:4317', metricsExportInterval: '1s' },
+        },
+      },
 
       // (2) A metrics exporter that exposes metrics as an HTTP endpoint that can be queried
       //     by your collector. Just point a browser on http://127.0.0.1:9091/metrics to
@@ -61,12 +68,14 @@ function initializeRuntime() {
 }
 
 async function main() {
-  initializeRuntime();
+  await otelSdk.start();
+
+  await initializeRuntime();
 
   const worker = await Worker.create({
     workflowsPath: require.resolve('./workflows'),
     activities,
-    taskQueue: 'interceptors-opentelemetry-example',
+    taskQueue: 'test-queue',
 
     // Registers OpenTelemetry Tracing sinks and interceptors for Workflow and Activity calls
     //

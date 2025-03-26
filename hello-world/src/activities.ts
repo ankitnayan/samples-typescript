@@ -2,6 +2,7 @@ import { delay } from "./workflows";
 import {lookup} from 'dns';
 import { readFile } from 'node:fs';
 import connect from 'connect';
+import { log } from '@temporalio/activity';
 // @@@SNIPSTART typescript-hello-activity
 
 
@@ -28,7 +29,7 @@ export async function greet(name: string): Promise<string> {
     console.log(data);
   }); 
 
-
+  log.info('Hello, world!');
   return `Hello, ${name}!`;
 }
 // @@@SNIPEND

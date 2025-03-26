@@ -150,7 +150,14 @@ export const otelSdk = new NodeSDK({
   metricReader,
 
   // This is optional; it enables auto-instrumentation for certain libraries.
-  instrumentations: [getNodeAutoInstrumentations()],
+  instrumentations: [getNodeAutoInstrumentations({
+    "@opentelemetry/instrumentation-http": {
+      enabled: true,
+    },
+    "@opentelemetry/instrumentation-winston": {
+      enabled: true,
+    },
+  })],
 });
 
 try {
