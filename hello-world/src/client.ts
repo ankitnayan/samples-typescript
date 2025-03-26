@@ -2,26 +2,35 @@
 import { Connection, Client } from '@temporalio/client';
 import { example } from './workflows';
 import { nanoid } from 'nanoid';
+import { getConnectionOptions } from './connection';
+import { OpenTelemetryWorkflowClientInterceptor } from '@temporalio/interceptors-opentelemetry';
+
 
 async function run() {
   // Connect to the default Server location
-  const connection = await Connection.connect({ address: 'localhost:7233' });
+  // const connection = await Connection.connect({ address: 'localhost:7233' });
   // In production, pass options to configure TLS and other settings:
   // {
   //   address: 'foo.bar.tmprl.cloud',
   //   tls: {}
   // }
 
+
+
+  const connection = await Connection.connect(await getConnectionOptions());
+
   const client = new Client({
     connection,
-    // namespace: 'foo.bar', // connects to 'default' namespace if not specified
+    namespace: process.env.NAMESPACE || 'default',
+    // Registers OpenTelemetry Tracing interceptor for Client calls
+    interceptors: {
+      workflow: [new OpenTelemetryWorkflowClientInterceptor()],
+    },
   });
-
+  
   const handle = await client.workflow.start(example, {
-    taskQueue: 'hello-world',
-    // type inference works! args: [name: string]
+    taskQueue: process.env.NODE_ENV === 'staging' ? 'integration' : 'hello-world',
     args: ['Temporal'],
-    // in practice, use a meaningful business ID, like customerId or transactionId
     workflowId: 'workflow-' + nanoid(),
   });
   console.log(`Started workflow ${handle.workflowId}`);
@@ -34,4 +43,4 @@ run().catch((err) => {
   console.error(err);
   process.exit(1);
 });
-// @@@SNIPEND
+
