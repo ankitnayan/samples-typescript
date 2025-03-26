@@ -1,12 +1,12 @@
 import winston, { transports } from 'winston';
 import type { Logger as TemporalLogger } from '@temporalio/common/lib/logger';
-
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
-import { logs } from '@opentelemetry/api-logs';
-import { LoggerProvider } from '@opentelemetry/sdk-logs';
+import { logs, SeverityNumber } from '@opentelemetry/api-logs';
+import { BatchLogRecordProcessor, ConsoleLogRecordExporter, LoggerProvider, LogRecord } from '@opentelemetry/sdk-logs';
 import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport';
 import { Resource } from '@opentelemetry/resources';
 import { SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
+import { LogLevel, LogMetadata, Logger } from '@temporalio/common';
 
 
 // Initialize the Logger provider
@@ -21,39 +21,50 @@ const loggerProvider = new LoggerProvider({
 
 // Configure OTLP exporter for SigNoz
 const otlpExporter = new OTLPLogExporter({
-    url: 'https://ingest.in.signoz.cloud:443/v1/logs',
+    url: 'https://ingest.us.staging.signoz.cloud:443/v1/logs',
     headers: {
-        'signoz-ingestion-key': 'vgqqxiEGfRGdVZYXzvi2c7-6e31kDV6HoFxZ',
+        'signoz-access-token': '4uOfUFbIsC8jcuTWtF27sTMbJZ4QWC4y5tSB',
     },
 })
 
-
 // Add processor with the OTLP exporter
 loggerProvider.addLogRecordProcessor(new SimpleLogRecordProcessor(otlpExporter))
+// loggerProvider.addLogRecordProcessor(new BatchLogRecordProcessor(otlpExporter))
+logs.setGlobalLoggerProvider(loggerProvider);
 
-// Set the global logger provider
-logs.setGlobalLoggerProvider(loggerProvider)
+
+const otlp_logger = loggerProvider.getLogger('default', '1.0.0');
+
 
 const winstonLogger = winston.createLogger({
     level: 'info',
     format: winston.format.json(),
     transports: [
-        new transports.Console({
-            format: winston.format.json(),
-        }),
+        new transports.Console(),
         new OpenTelemetryTransportV3(),
     ],
 });
 
-export const logger: TemporalLogger = {
-    trace: (message: any, ...args: any[]) => winstonLogger.debug(message, ...args),
-    debug: (message: any, ...args: any[]) => winstonLogger.debug(message, ...args),
-    info: (message: any, ...args: any[]) => winstonLogger.info(message, ...args),
-    warn: (message: any, ...args: any[]) => winstonLogger.warn(message, ...args),
-    error: (message: any, ...args: any[]) => winstonLogger.error(message, ...args),
-    log: (level: string, message: any, ...args: any[]) => {
-        const logFn = (winstonLogger as any)[level] || winstonLogger.info;
-        return logFn(message, ...args);
+
+export const logger: Logger = {
+    trace: (...args) => winstonLogger.debug(...args),
+    debug: (...args) => winstonLogger.debug(...args),
+    info: (...args) => winstonLogger.info(...args),
+    warn: (...args) => winstonLogger.warn(...args),
+    error: (...args) => winstonLogger.error(...args),
+    log: (level, message, ...args) => {
+
+        otlp_logger.emit({
+            // severityNumber: 16,
+            severityText: level,
+            body: message,
+            // attributes: args[0] || {},
+            attributes: Object.assign({}, ...args),
+        });
+        // console.log(`Message: ${message}, Level: ${level}, Attributes: ${JSON.stringify(Object.assign({}, ...args))}`);
+        return (winstonLogger as any)[level]?.(...args) || winstonLogger.info(...args)
     }
 };
   
+
+

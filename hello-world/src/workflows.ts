@@ -26,7 +26,7 @@ export async function delay(ms: number) {
 export async function example(name: string): Promise<string> {
 
   await delay(5000);
-  log.info('Before greet!');
+  log.error('Before greet!');
   return await greet(name);
 }
 

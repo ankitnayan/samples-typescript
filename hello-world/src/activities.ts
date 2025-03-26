@@ -29,7 +29,7 @@ export async function greet(name: string): Promise<string> {
     console.log(data);
   }); 
 
-  log.info('Hello, world!');
+  log.error('Hello, world!');
   return `Hello, ${name}!`;
 }
 // @@@SNIPEND
