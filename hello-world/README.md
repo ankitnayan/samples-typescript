@@ -16,3 +16,10 @@ The Workflow should return:
 ```bash
 Hello, Temporal!
 ```
+
+
+## Working with temporal cloud and signoz cloud
+ Run command
+ ```
+OTEL_EXPORTER_OTLP_ENDPOINT='https://ingest.<region>.signoz.cloud:443' OTEL_RESOURCE_ATTRIBUTES="service.name=<service name>" OTEL_EXPORTER_OTLP_HEADERS="signoz-ingestion-key=<ingestion key>" npm run start.watch
+ ```

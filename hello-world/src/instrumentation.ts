@@ -1,4 +1,3 @@
-
 // OpenTelemetry's Node.js documentation recommends to setup instrumentation from a
 // dedicated file, which can be required before anything else in the application;
 // e.g. by running node with `--require ./instrumentation.js`. See
@@ -14,8 +13,9 @@ import { OTLPMetricExporter as OTLPMetricExporterHttp } from '@opentelemetry/exp
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { MetricReader, PeriodicExportingMetricReader, ConsoleMetricExporter } from '@opentelemetry/sdk-metrics';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
-import { Resource } from '@opentelemetry/resources';
-import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions';
+import { Resource, detectResourcesSync } from '@opentelemetry/resources';
+import { envDetector, hostDetector, osDetector, processDetector } from '@opentelemetry/resources';
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
 import { ConnectInstrumentation } from '@opentelemetry/instrumentation-connect';
 import { DnsInstrumentation } from '@opentelemetry/instrumentation-dns';
@@ -23,92 +23,103 @@ import { FsInstrumentation } from '@opentelemetry/instrumentation-fs';
 import { Runtime } from '@temporalio/worker';
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
-/**
- * Configure the OpenTelemetry trace exporter.
- *
- * IMPORTANT: Uncomment either of the three options below to choose the desired exporter,
- *            as appropriate for your environment.
- */
+export const OTEL_EXPORTER_OTLP_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4317'
+
+export const OTEL_EXPORTER_OTLP_LOGS_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT || `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318'}/v1/logs`;
+
+export const OTEL_EXPORTER_OTLP_TRACES_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT || `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318'}/v1/traces`;
+
+export const OTEL_EXPORTER_OTLP_METRICS_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT || `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318'}/v1/metrics`;
+
+
+// Function to parse headers from OTEL_EXPORTER_OTLP_HEADERS
+function parseHeaders(headersString: string | undefined): Record<string, string> {
+  if (!headersString) return {};
+
+  const headers: Record<string, string> = {};
+  const pairs = headersString.split(',');
+
+  pairs.forEach((pair) => {
+    const [key, value] = pair.split('=');
+    if (key && value) {
+      headers[key.trim()] = value.trim();
+    }
+  });
+
+  return headers;
+}
+
+// Parse headers from the environment variable
+export const otlpHeaders = parseHeaders(process.env.OTEL_EXPORTER_OTLP_HEADERS);
+
+
+// Function to parse OTEL_RESOURCE_ATTRIBUTES into an object
+function parseResourceAttributes(attributesString: string | undefined): { [key: string]: string } {
+  if (!attributesString) return {};
+
+  const attributes: { [key: string]: string } = {};
+  const pairs = attributesString.split(',');
+
+  pairs.forEach((pair) => {
+    const [key, value] = pair.split('=');
+    if (key && value) {
+      attributes[key] = value;
+    }
+  });
+
+  return attributes;
+}
+
+// Parse resource attributes from environment variable
+const resourceAttributesString = process.env.OTEL_RESOURCE_ATTRIBUTES;
+const parsedAttributes = parseResourceAttributes(resourceAttributesString);
+
+// Merge parsed attributes with service name
+const resourceAttributes = {
+  ...parsedAttributes,
+  'service.name': process.env.OTEL_SERVICE_NAME || 'default-temporal-service',
+};
+
+// Detect resources using built-in detectors
+const detectedResources = detectResourcesSync({
+  detectors: [
+    envDetector, 
+    hostDetector, 
+    osDetector,
+    processDetector
+  ]
+});
+
+// Filter out process.pid from the detected resources
+const filteredAttributes = { ...detectedResources.attributes };
+delete filteredAttributes['process.command_args'];
+const filteredResources = new Resource(filteredAttributes);
+
+// Create final resource by merging detected resources with custom attributes
+export const resource = new Resource(resourceAttributes).merge(filteredResources);
+
+
 function setupTraceExporter(): SpanExporter | undefined {
-  // (1) A span exporter that simply outputs to the console.
-  //     This only makes sense for demonstration purpose.
-  //
-//   return new ConsoleSpanExporter();
 
-  // (2) A span exporter that sends spans to a server using the _OTLP over gRPC_ protocol.
-  //     This is the most common configuration when connecting to a trace collector.
-  //
-  // return new OTLPTraceExporterGrpc({
-  //   url: 'ingest.in.signoz.cloud:443',
-  //   headers: {
-  //     'signoz-ingestion-key': 'b7918a50-a0a2-4152-a196-91abdc3c4a40',
-  //   },  
-  
-  //   // Default is 10s, which reduces performance overhead in production,
-  //   // but a shorter value is convenient in dev and test use cases.
-  //   timeoutMillis: 10000,
-  // });
-
-  // (3) A span exporter that sends spans to a server as _OTLP over HTTP_.
-  //     This may be used as a fallback if _OTLP over gRPC_ doesn't work for whatever reason.
-  //     Note however that _OTLP over HTTP_ is not supported for Runtime's metrics.
-  //
   return new OTLPTraceExporterHttp({
-    url: 'https://ingest.in.signoz.cloud:443/v1/traces',
-    headers: {
-      'signoz-ingestion-key': 'b7918a50-a0a2-4152-a196-91abdc3c4a40',
-    },  
+    url: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
+    headers: otlpHeaders,
   
     // Default is 10s, which reduces performance overhead in production,
     // but a shorter value is convenient in dev and test use cases.
-    timeoutMillis: 1000,
+    timeoutMillis: 10000,
   });
 
   return undefined;
 }
 
-/**
- * Configure the OpenTelemetry metric reader, and its associated exporter if applicable.
- *
- * Note this is only pertinent if you want to export metrics from the Node process itself;
- * metrics for the Temporal Worker are controlled through the Runtime options.
- *
- * IMPORTANT: Uncomment either of the four options below to choose the desired exporter,
- *            as appropriate for your environment.
- */
+
 function setupMetricReader(): MetricReader | undefined {
-  // (1) A metric reader that periodically outputs all metrics to the console.
-  //     This only makes sense for demonstration purpose.
-  //
-  // return new PeriodicExportingMetricReader({
-  //   exporter: new ConsoleMetricExporter(),
-  // });
-
-  // (2) A metric exporter that periodically sends metrics to a server using the _OTLP over gRPC_ protocol.
-  //     This is the most common configuration when connecting to a metrics collector.
-  //
-  // return new PeriodicExportingMetricReader({
-  //   exporter: new OTLPMetricExporterGrpc({
-  //     url: 'ingest.in.signoz.cloud:443',
-  //     headers: {
-  //       'signoz-ingestion-key': 'b7918a50-a0a2-4152-a196-91abdc3c4a40',
-  //     },  
-  //     // Default is 10s, which reduces performance overhead in production,
-  //     // but a shorter value is convenient in dev and test use cases.
-  //     timeoutMillis: 10000,
-  //   }),
-  // });
-
-  // (3) A metrics exporter that sends metrics to a server as _OTLP over HTTP_.
-  //     This may be used as a fallback if _OTLP over gRPC_ doesn't work for whatever reason.
-  //     Note however that _OTLP over HTTP_ is not supported for Runtime's metrics.
-  //
+ 
   return new PeriodicExportingMetricReader({
     exporter: new OTLPMetricExporterHttp({
-      url: 'https://ingest.in.signoz.cloud:443/v1/metrics',
-      headers: {
-        'signoz-ingestion-key': 'b7918a50-a0a2-4152-a196-91abdc3c4a40',
-      },  
+      url: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
+      headers: otlpHeaders,  
 
 
       // Default is 10s, which reduces performance overhead in production,
@@ -117,22 +128,7 @@ function setupMetricReader(): MetricReader | undefined {
     }),
   });
 
-  // (4) A metrics exporter that exposes metrics as an HTTP endpoint that can be queried by a collector.
-  //
-  // return new PrometheusExporter({
-  //   // Depending on you execution environment, you might need to set `host` to `0.0.0.0` instead;
-  //   // beware however that doing so in environments where this is not needed might expose your metrics
-  //   // to the public Internet. This is why we default to the safer value of `127.0.0.1`.
-  //   host: '127.0.0.1',
-
-  //   // Runtime's metrics will be exposed on port 9091, Node's metrics on 9092.
-  //   port: 9092,
-  // });
 }
-
-export const resource = new Resource({
-  [ATTR_SERVICE_NAME]: 'interceptors-sample',
-});
 
 export const traceExporter = setupTraceExporter();
 const metricReader = setupMetricReader();

@@ -7,24 +7,18 @@ import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport';
 import { Resource } from '@opentelemetry/resources';
 import { SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
 import { LogLevel, LogMetadata, Logger } from '@temporalio/common';
-
+import { OTEL_EXPORTER_OTLP_LOGS_ENDPOINT, otlpHeaders, resource } from './instrumentation';
 
 // Initialize the Logger provider
 const loggerProvider = new LoggerProvider({
-    resource: new Resource({
-      'service.name': 'winston-logger',
-      'service.version': '1.0.0',
-      'deployment.environment': process.env.NODE_ENV || 'development',
-    }),
+    resource,
   })
 
 
 // Configure OTLP exporter for SigNoz
 const otlpExporter = new OTLPLogExporter({
-    url: 'https://ingest.in.signoz.cloud:443/v1/logs',
-    headers: {
-        'signoz-ingestion-key': 'b7918a50-a0a2-4152-a196-91abdc3c4a40',
-    },
+    url: OTEL_EXPORTER_OTLP_LOGS_ENDPOINT,
+    headers: otlpHeaders
 })
 
 // Add processor with the OTLP exporter
