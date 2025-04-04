@@ -1,12 +1,10 @@
 import winston, { transports } from 'winston';
-import type { Logger as TemporalLogger } from '@temporalio/common/lib/logger';
 import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
-import { logs, SeverityNumber } from '@opentelemetry/api-logs';
-import { BatchLogRecordProcessor, ConsoleLogRecordExporter, LoggerProvider, LogRecord } from '@opentelemetry/sdk-logs';
-import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport';
-import { Resource } from '@opentelemetry/resources';
+import { logs } from '@opentelemetry/api-logs';
+import { LoggerProvider } from '@opentelemetry/sdk-logs';
 import { SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
-import { LogLevel, LogMetadata, Logger } from '@temporalio/common';
+import { Logger } from '@temporalio/common';
+import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport';    
 import { OTEL_EXPORTER_OTLP_LOGS_ENDPOINT, otlpHeaders, resource } from './instrumentation';
 
 // Initialize the Logger provider

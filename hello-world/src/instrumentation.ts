@@ -5,22 +5,15 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NodeSDK } from '@opentelemetry/sdk-node';
-import { ConsoleSpanExporter, SpanExporter } from '@opentelemetry/sdk-trace-node';
-import { OTLPTraceExporter as OTLPTraceExporterGrpc } from '@opentelemetry/exporter-trace-otlp-grpc';
+import { SpanExporter } from '@opentelemetry/sdk-trace-node';
 import { OTLPTraceExporter as OTLPTraceExporterHttp } from '@opentelemetry/exporter-trace-otlp-http';
-import { OTLPMetricExporter as OTLPMetricExporterGrpc } from '@opentelemetry/exporter-metrics-otlp-grpc';
 import { OTLPMetricExporter as OTLPMetricExporterHttp } from '@opentelemetry/exporter-metrics-otlp-http';
-import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
-import { MetricReader, PeriodicExportingMetricReader, ConsoleMetricExporter } from '@opentelemetry/sdk-metrics';
+import { MetricReader, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { Resource, detectResourcesSync } from '@opentelemetry/resources';
 import { envDetector, hostDetector, osDetector, processDetector } from '@opentelemetry/resources';
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import { diag, DiagConsoleLogger, DiagLogLevel } from '@opentelemetry/api';
-import { ConnectInstrumentation } from '@opentelemetry/instrumentation-connect';
-import { DnsInstrumentation } from '@opentelemetry/instrumentation-dns';
-import { FsInstrumentation } from '@opentelemetry/instrumentation-fs';  
-import { Runtime } from '@temporalio/worker';
+import { diag } from '@opentelemetry/api';
+
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
 export const OTEL_EXPORTER_OTLP_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4317'

@@ -1,5 +1,5 @@
 // @@@SNIPSTART typescript-hello-worker
-import { DefaultLogger, makeTelemetryFilterString, NativeConnection, Runtime, Worker } from '@temporalio/worker';
+import { makeTelemetryFilterString, NativeConnection, Runtime, Worker } from '@temporalio/worker';
 import * as activities from './activities';
 import { getConnectionOptions } from './connection';
 import {
@@ -7,8 +7,7 @@ import {
   OpenTelemetryActivityOutboundInterceptor,
   makeWorkflowExporter,
 } from '@temporalio/interceptors-opentelemetry/lib/worker';
-import { OTEL_EXPORTER_OTLP_ENDPOINT, OTEL_EXPORTER_OTLP_METRICS_ENDPOINT, otelSdk, otlpHeaders, resource, traceExporter } from './instrumentation';
-import { MetricReader } from '@opentelemetry/sdk-metrics';
+import { OTEL_EXPORTER_OTLP_ENDPOINT, otelSdk, otlpHeaders, resource, traceExporter } from './instrumentation';
 import { logger } from './logger';
 
 
