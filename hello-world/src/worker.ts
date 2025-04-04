@@ -9,8 +9,20 @@ import {
 } from '@temporalio/interceptors-opentelemetry/lib/worker';
 import { OTEL_EXPORTER_OTLP_ENDPOINT, otelSdk, otlpHeaders, resource, traceExporter } from './instrumentation';
 import { logger } from './logger';
+import { metrics } from '@opentelemetry/api';
 
+// Get a meter instance
+const meter = metrics.getMeter('order-service');
 
+// Create a counter to track total requests
+const requestCounter = meter.createCounter('requests_total', {
+  description: 'Total number of requests processed',
+});
+
+// Increment the counter in your business logic
+export function processRequest() {
+  requestCounter.add(1, { status: 'success' }); // Add attributes if needed
+}
 
 function initializeRuntime() {
   

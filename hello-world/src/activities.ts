@@ -3,6 +3,7 @@ import {lookup} from 'dns';
 import { readFile } from 'node:fs';
 import connect from 'connect';
 import { log } from '@temporalio/activity';
+import { processRequest } from './worker';
 // @@@SNIPSTART typescript-hello-activity
 
 
@@ -30,6 +31,7 @@ export async function greet(name: string): Promise<string> {
   }); 
 
   log.error('Hello, world!');
+  processRequest();
   return `Hello, ${name}!`;
 }
 // @@@SNIPEND
