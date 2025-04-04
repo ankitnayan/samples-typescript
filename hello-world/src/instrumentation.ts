@@ -38,25 +38,25 @@ function setupTraceExporter(): SpanExporter | undefined {
   // (2) A span exporter that sends spans to a server using the _OTLP over gRPC_ protocol.
   //     This is the most common configuration when connecting to a trace collector.
   //
-//   return new OTLPTraceExporterGrpc({
-//     url: 'ingest.us.staging.signoz.cloud:443',
-//     headers: {
-//       'signoz-access-token': '4uOfUFbIsC8jcuTWtF27sTMbJZ4QWC4y5tSB',
-//     },  
+  // return new OTLPTraceExporterGrpc({
+  //   url: 'ingest.in.signoz.cloud:443',
+  //   headers: {
+  //     'signoz-ingestion-key': 'b7918a50-a0a2-4152-a196-91abdc3c4a40',
+  //   },  
   
-//     // Default is 10s, which reduces performance overhead in production,
-//     // but a shorter value is convenient in dev and test use cases.
-//     timeoutMillis: 10000,
-//   });
+  //   // Default is 10s, which reduces performance overhead in production,
+  //   // but a shorter value is convenient in dev and test use cases.
+  //   timeoutMillis: 10000,
+  // });
 
   // (3) A span exporter that sends spans to a server as _OTLP over HTTP_.
   //     This may be used as a fallback if _OTLP over gRPC_ doesn't work for whatever reason.
   //     Note however that _OTLP over HTTP_ is not supported for Runtime's metrics.
   //
   return new OTLPTraceExporterHttp({
-    url: 'https://ingest.us.staging.signoz.cloud:443/v1/traces',
+    url: 'https://ingest.in.signoz.cloud:443/v1/traces',
     headers: {
-      'signoz-access-token': '4uOfUFbIsC8jcuTWtF27sTMbJZ4QWC4y5tSB',
+      'signoz-ingestion-key': 'b7918a50-a0a2-4152-a196-91abdc3c4a40',
     },  
   
     // Default is 10s, which reduces performance overhead in production,
@@ -87,35 +87,35 @@ function setupMetricReader(): MetricReader | undefined {
   // (2) A metric exporter that periodically sends metrics to a server using the _OTLP over gRPC_ protocol.
   //     This is the most common configuration when connecting to a metrics collector.
   //
-  return new PeriodicExportingMetricReader({
-    exporter: new OTLPMetricExporterGrpc({
-      url: 'ingest.us.staging.signoz.cloud:443',
-      headers: {
-        'signoz-access-token': '4uOfUFbIsC8jcuTWtF27sTMbJZ4QWC4y5tSB',
-      },  
-      // Default is 10s, which reduces performance overhead in production,
-      // but a shorter value is convenient in dev and test use cases.
-      timeoutMillis: 1000,
-    }),
-  });
+  // return new PeriodicExportingMetricReader({
+  //   exporter: new OTLPMetricExporterGrpc({
+  //     url: 'ingest.in.signoz.cloud:443',
+  //     headers: {
+  //       'signoz-ingestion-key': 'b7918a50-a0a2-4152-a196-91abdc3c4a40',
+  //     },  
+  //     // Default is 10s, which reduces performance overhead in production,
+  //     // but a shorter value is convenient in dev and test use cases.
+  //     timeoutMillis: 10000,
+  //   }),
+  // });
 
   // (3) A metrics exporter that sends metrics to a server as _OTLP over HTTP_.
   //     This may be used as a fallback if _OTLP over gRPC_ doesn't work for whatever reason.
   //     Note however that _OTLP over HTTP_ is not supported for Runtime's metrics.
   //
-  // return new PeriodicExportingMetricReader({
-  //   exporter: new OTLPMetricExporterHttp({
-  //     url: 'https://ingest.us.staging.signoz.cloud:443/v1/metrics',
-  //     headers: {
-  //       'signoz-access-token': '4uOfUFbIsC8jcuTWtF27sTMbJZ4QWC4y5tSB',
-  //     },  
+  return new PeriodicExportingMetricReader({
+    exporter: new OTLPMetricExporterHttp({
+      url: 'https://ingest.in.signoz.cloud:443/v1/metrics',
+      headers: {
+        'signoz-ingestion-key': 'b7918a50-a0a2-4152-a196-91abdc3c4a40',
+      },  
 
 
-  //     // Default is 10s, which reduces performance overhead in production,
-  //     // but a shorter value is convenient in dev and test use cases.
-  //     timeoutMillis: 1000,
-  //   }),
-  // });
+      // Default is 10s, which reduces performance overhead in production,
+      // but a shorter value is convenient in dev and test use cases.
+      timeoutMillis: 10000,
+    }),
+  });
 
   // (4) A metrics exporter that exposes metrics as an HTTP endpoint that can be queried by a collector.
   //
@@ -150,14 +150,7 @@ export const otelSdk = new NodeSDK({
   metricReader,
 
   // This is optional; it enables auto-instrumentation for certain libraries.
-  instrumentations: [getNodeAutoInstrumentations({
-    "@opentelemetry/instrumentation-http": {
-      enabled: true,
-    },
-    "@opentelemetry/instrumentation-winston": {
-      enabled: true,
-    },
-  })],
+  instrumentations: [getNodeAutoInstrumentations()],
 });
 
 try {

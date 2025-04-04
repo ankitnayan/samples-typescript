@@ -39,16 +39,16 @@ function initializeRuntime() {
       //     is not supported for Runtime's metrics.
       //
       metrics: {
-        prometheus: {
-          bindAddress: '0.0.0.0:9091',
-        },
-        // otel: {
-        //   url: 'https://ingest.us.staging.signoz.cloud:443',
-        //   headers: {
-        //     'signoz-access-token': '4uOfUFbIsC8jcuTWtF27sTMbJZ4QWC4y5tSB',
-        //   },
-        //   metricsExportInterval: 10000,
+        // prometheus: {
+        //   bindAddress: '0.0.0.0:9091',
         // },
+        otel: {
+          url: 'https://ingest.in.signoz.cloud:443',
+          headers: {
+            'signoz-access-token': 'b7918a50-a0a2-4152-a196-91abdc3c4a40',
+          },
+          metricsExportInterval: 10000,
+        },
       },
 
       // (2) A metrics exporter that exposes metrics as an HTTP endpoint that can be queried

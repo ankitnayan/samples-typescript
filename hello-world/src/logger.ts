@@ -21,9 +21,9 @@ const loggerProvider = new LoggerProvider({
 
 // Configure OTLP exporter for SigNoz
 const otlpExporter = new OTLPLogExporter({
-    url: 'https://ingest.us.staging.signoz.cloud:443/v1/logs',
+    url: 'https://ingest.in.signoz.cloud:443/v1/logs',
     headers: {
-        'signoz-access-token': '4uOfUFbIsC8jcuTWtF27sTMbJZ4QWC4y5tSB',
+        'signoz-ingestion-key': 'b7918a50-a0a2-4152-a196-91abdc3c4a40',
     },
 })
 
