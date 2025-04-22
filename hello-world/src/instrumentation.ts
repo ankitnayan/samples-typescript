@@ -20,13 +20,6 @@ import { diag } from '@opentelemetry/api';
 
 /* eslint-enable @typescript-eslint/no-unused-vars */
 
-export const OTEL_EXPORTER_OTLP_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4317'
-
-export const OTEL_EXPORTER_OTLP_LOGS_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT || `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4317'}`;
-
-export const OTEL_EXPORTER_OTLP_TRACES_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT || `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4317'}`;
-
-export const OTEL_EXPORTER_OTLP_METRICS_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT || `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4317'}`;
 
 
 // Function to parse headers from OTEL_EXPORTER_OTLP_HEADERS
@@ -102,7 +95,6 @@ export const resource = new Resource(resourceAttributes).merge(filteredResources
 
 function setupTraceExporter(): SpanExporter | undefined {
   return new OTLPTraceExporterGrpc({
-    url: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
     headers: otlpHeaders,
     timeoutMillis: 10000,
   });
@@ -111,7 +103,6 @@ function setupTraceExporter(): SpanExporter | undefined {
 function setupMetricReader(): MetricReader | undefined {
   return new PeriodicExportingMetricReader({
     exporter: new OTLPMetricExporterGrpc({
-      url: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
       headers: otlpHeaders,
       timeoutMillis: 10000,
     }),

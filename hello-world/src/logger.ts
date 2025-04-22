@@ -5,7 +5,7 @@ import { LoggerProvider } from '@opentelemetry/sdk-logs';
 import { SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
 import { Logger } from '@temporalio/common';
 import { OpenTelemetryTransportV3 } from '@opentelemetry/winston-transport';    
-import { OTEL_EXPORTER_OTLP_LOGS_ENDPOINT, otlpHeaders, resource } from './instrumentation';
+import { otlpHeaders, resource } from './instrumentation';
 
 // Initialize the Logger provider
 const loggerProvider = new LoggerProvider({
@@ -15,7 +15,6 @@ const loggerProvider = new LoggerProvider({
 
 // Configure OTLP exporter for SigNoz using gRPC
 const otlpExporter = new OTLPLogExporterGrpc({
-    url: OTEL_EXPORTER_OTLP_LOGS_ENDPOINT,
     headers: otlpHeaders
 })
 

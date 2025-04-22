@@ -7,7 +7,7 @@ import {
   OpenTelemetryActivityOutboundInterceptor,
   makeWorkflowExporter,
 } from '@temporalio/interceptors-opentelemetry/lib/worker';
-import { OTEL_EXPORTER_OTLP_ENDPOINT, otelSdk, otlpHeaders, resource, traceExporter } from './instrumentation';
+import { otelSdk, otlpHeaders, resource, traceExporter } from './instrumentation';
 import { logger } from './logger';
 import { metrics } from '@opentelemetry/api';
 
@@ -34,7 +34,7 @@ function initializeRuntime() {
       metrics: {
 
         otel: {
-          url: OTEL_EXPORTER_OTLP_ENDPOINT,
+          url: process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4317',
           headers: otlpHeaders,
           metricsExportInterval: 10000,
         },
