@@ -98,7 +98,6 @@ async function main() {
     await worker.run();
 
   } finally {
-
     await otelSdk.shutdown();
   }
 }

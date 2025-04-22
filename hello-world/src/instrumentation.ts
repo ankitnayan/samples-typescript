@@ -67,10 +67,14 @@ function parseResourceAttributes(attributesString: string | undefined): { [key: 
 const resourceAttributesString = process.env.OTEL_RESOURCE_ATTRIBUTES;
 const parsedAttributes = parseResourceAttributes(resourceAttributesString);
 
-// Merge parsed attributes with service name
+// Set service name from environment or use default
+const serviceName = process.env.OTEL_SERVICE_NAME || 'default-temporal-service';
+// console.log('Setting service name to:', serviceName);
+
+// Create resource attributes with service name
 const resourceAttributes = {
-  ...parsedAttributes,
-  'service.name': process.env.OTEL_SERVICE_NAME || 'default-temporal-service',
+  'service.name': serviceName,
+  ...parsedAttributes
 };
 
 // Detect resources using built-in detectors

@@ -12,7 +12,7 @@ export async function greet(name: string): Promise<string> {
 
   await delay(3000);
   
-  await fetch('https://signoz.io/');
+  // await fetch('https://signoz.io/');
 
   lookup('google.com',  (err, address) => {
     console.log('address: ', address);
@@ -25,9 +25,8 @@ export async function greet(name: string): Promise<string> {
     next();
   });
 
-  readFile('/etc/passwd', (err, data) => {
+  readFile('/etc/passwd', (err, _data) => {
     if (err) throw err;
-    console.log(data);
   }); 
 
   log.error('Hello, world!');

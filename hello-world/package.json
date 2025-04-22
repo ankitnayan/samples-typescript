@@ -50,6 +50,7 @@
     "connect": "3.x",
     "dns": "0.2.2",
     "dotenv": "^16.4.7",
+    "fetch": "^1.1.0",
     "fs": "0.0.1-security",
     "fs-extra": "^11.3.0",
     "nanoid": "3.x",
