@@ -3,11 +3,15 @@
 // e.g. by running node with `--require ./instrumentation.js`. See
 // https://opentelemetry.io/docs/languages/js/getting-started/nodejs/#setup for details.
 
+import { config } from 'dotenv';
+config(); // Load environment variables before anything else
+
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { NodeSDK } from '@opentelemetry/sdk-node';
 import { SpanExporter } from '@opentelemetry/sdk-trace-node';
-import { OTLPTraceExporter as OTLPTraceExporterHttp } from '@opentelemetry/exporter-trace-otlp-http';
-import { OTLPMetricExporter as OTLPMetricExporterHttp } from '@opentelemetry/exporter-metrics-otlp-http';
+import { OTLPTraceExporter as OTLPTraceExporterGrpc } from '@opentelemetry/exporter-trace-otlp-grpc';
+import { OTLPMetricExporter as OTLPMetricExporterGrpc } from '@opentelemetry/exporter-metrics-otlp-grpc';
+import { OTLPLogExporter as OTLPLogExporterGrpc } from '@opentelemetry/exporter-logs-otlp-grpc';
 import { MetricReader, PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { getNodeAutoInstrumentations } from '@opentelemetry/auto-instrumentations-node';
 import { Resource, detectResourcesSync } from '@opentelemetry/resources';
@@ -18,11 +22,11 @@ import { diag } from '@opentelemetry/api';
 
 export const OTEL_EXPORTER_OTLP_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4317'
 
-export const OTEL_EXPORTER_OTLP_LOGS_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT || `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318'}/v1/logs`;
+export const OTEL_EXPORTER_OTLP_LOGS_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_LOGS_ENDPOINT || `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4317'}`;
 
-export const OTEL_EXPORTER_OTLP_TRACES_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT || `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318'}/v1/traces`;
+export const OTEL_EXPORTER_OTLP_TRACES_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_TRACES_ENDPOINT || `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4317'}`;
 
-export const OTEL_EXPORTER_OTLP_METRICS_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT || `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4318'}/v1/metrics`;
+export const OTEL_EXPORTER_OTLP_METRICS_ENDPOINT = process.env.OTEL_EXPORTER_OTLP_METRICS_ENDPOINT || `${process.env.OTEL_EXPORTER_OTLP_ENDPOINT || 'http://localhost:4317'}`;
 
 
 // Function to parse headers from OTEL_EXPORTER_OTLP_HEADERS
@@ -97,34 +101,21 @@ export const resource = new Resource(resourceAttributes).merge(filteredResources
 
 
 function setupTraceExporter(): SpanExporter | undefined {
-
-  return new OTLPTraceExporterHttp({
+  return new OTLPTraceExporterGrpc({
     url: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT,
     headers: otlpHeaders,
-  
-    // Default is 10s, which reduces performance overhead in production,
-    // but a shorter value is convenient in dev and test use cases.
     timeoutMillis: 10000,
   });
-
-  return undefined;
 }
 
-
 function setupMetricReader(): MetricReader | undefined {
- 
   return new PeriodicExportingMetricReader({
-    exporter: new OTLPMetricExporterHttp({
+    exporter: new OTLPMetricExporterGrpc({
       url: OTEL_EXPORTER_OTLP_METRICS_ENDPOINT,
-      headers: otlpHeaders,  
-
-
-      // Default is 10s, which reduces performance overhead in production,
-      // but a shorter value is convenient in dev and test use cases.
+      headers: otlpHeaders,
       timeoutMillis: 10000,
     }),
   });
-
 }
 
 export const traceExporter = setupTraceExporter();

@@ -1,5 +1,5 @@
 import winston, { transports } from 'winston';
-import { OTLPLogExporter } from '@opentelemetry/exporter-logs-otlp-http';
+import { OTLPLogExporter as OTLPLogExporterGrpc } from '@opentelemetry/exporter-logs-otlp-grpc';
 import { logs } from '@opentelemetry/api-logs';
 import { LoggerProvider } from '@opentelemetry/sdk-logs';
 import { SimpleLogRecordProcessor } from '@opentelemetry/sdk-logs';
@@ -13,8 +13,8 @@ const loggerProvider = new LoggerProvider({
   })
 
 
-// Configure OTLP exporter for SigNoz
-const otlpExporter = new OTLPLogExporter({
+// Configure OTLP exporter for SigNoz using gRPC
+const otlpExporter = new OTLPLogExporterGrpc({
     url: OTEL_EXPORTER_OTLP_LOGS_ENDPOINT,
     headers: otlpHeaders
 })
